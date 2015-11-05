@@ -1,0 +1,49 @@
+
+var system = require('system');
+var args = system.args;
+var url;
+var isDone=[];
+
+
+
+if (args.length <= 1) {
+    console.log('No website specified.');
+    phantom.exit();
+}
+
+for (var k=0; k<args.length; k++) {
+    isDone[k] = false;
+}
+
+
+function exitIfDone() {
+  for (var j=1; j<=args.length-1; j++) {
+    if (isDone[j]==false) {
+      return;
+    }
+  }
+  phantom.exit();
+}
+
+function getOnePageTitle(url, index) {
+
+  var page = require('webpage').create();
+
+  page.onConsoleMessage = function(msg) {
+    console.log(msg);
+  };
+  page.open(url, function(status) {
+    page.evaluate(function() {
+      //title[i]=document.title;
+      console.log(document.location + 'Page title is ' + title[i]);
+    });
+  });
+  isDone[index]=true;
+
+}
+
+for (var i=1; i<=args.length-1; i++) {
+  url = args[i];
+  getOnePageTitle(url, i);
+  exitIfDone();
+}

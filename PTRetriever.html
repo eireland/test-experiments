@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Access the Pivotal Tracker API via CORS</title>
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js'
+            type='text/javascript'></script>
+</head>
+<body>
+<form>
+    <p>
+        <label for='token'>User API Token:</label>
+        <input type='text' id='token' />
+    </p><p>
+    <label for='project_id'>ID Number of Pivotal Tracker Project:</label>
+    <input type='text' id='project_id' />
+</p>
+</form>
+
+<a href='#' id='doit_link'>Fetch Story Names from Project</a>
+
+<div style='margin:40px'>
+    <p id='result_title'></p>
+    <ul id='result_area'>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    var projectId;
+
+    function executeTrackerApiFetch() {
+        // get parameters
+        var token = $('#token').val();
+        projectId = $('#project_id').val();
+
+        // compose request URL
+        var url = 'https://www.pivotaltracker.com/services/v5';
+        url += '/projects/' + projectId;
+        url += '/stories?filter=state:delivered,finished,rejected,started';
+        url += ',unstarted,unscheduled';
+        url += '&limit=20';
+
+        // do API request to get story names
+        $.ajax({
+            url: url,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-TrackerToken', token);
+            }
+        }).done(displayTrackerApiResponse);
+    }
+
+    function displayTrackerApiResponse(stories) {
+        $('#result_title').html('Unaccepted stories from Project #' + projectId + ' (up to the first 20)');
+
+        var html = '';
+        for (var i=0; i < stories.length;i++) {
+            html += '<li>' + stories[i].name + '</li>';
+        }
+        $('#result_area').html(html);
+    }
+
+    $(function() {
+        $('#doit_link').click(executeTrackerApiFetch);
+    });
+</script>
+</body>
+</html>
+If you are going to load this example HTML i

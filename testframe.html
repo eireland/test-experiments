@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>TestFrame</title>
+
+</head>
+<body>
+    <!--<iframe id="frame1"> -->
+        <!--<form name="form1">-->
+            <p>numTrials <input type="text" id="numTrialsId" size=5 maxlength=4 name="numTrialsName"></p>
+            <input type="button" onClick="runTest();" name="run" value="Run">
+        <!--</form>-->
+        <!--<div id="display"></div>-->
+   <!-- </iframe>-->
+    <script type="text/javascript">
+        function runTest() {
+            var numTrialsEntered = document.getElementById("numTrialsId").value;
+            var messageBox= document.getElementById("display");
+            console.log("numTrialsEntered " +numTrialsEntered);
+            <!--window.alert ("numTrialsEntered is "+numTrialsEntered);-->
+        }
+    </script>
+
+</body>
+</html>
