@@ -26,11 +26,13 @@ class CODAPObject
   CALC_TILE = {css: '.calculator'}
   OPEN_NEW_BUTTON = {id: 'dg-user-entry-new-doc-button'}
   OPEN_EXAMPLE_BUTTON = {id: 'dg-user-entry-example-button'}
-  OPEN_FILE_BUTTON = {id: 'dg-user-entry-open-local-button'}
+  OPEN_LOCAL_DOC_BUTTON = {id: 'dg-user-entry-open-local-doc-button'}
   USER_ENTRY_OK_BUTTON= {css: '.dg-ok-new-doc-button'}
   USER_ENTRY_EXAMPLE_OK_BUTTON = {css: '.dg-example-ok-button'}
   EXAMPLE_FILENAME_LIST  = {css: '.dg-example-name'}
   TILE_ICON_SLIDER = {css: '.tile-icon-slider'}
+  OPEN_LOCAL_DOC_SELECT = {xpath: '//div[contains(@class, "dg-file-import-view")]/div/input[contains(@class, "field")]'}#= {css: '.dg-file-import-view'}
+  USER_ENTRY_OPEN_LOCAL_OK = {css: '.dg-ok-open-local-button'}
 
   MARKOV_DOC_TITLE = {xpath: '//div[contains(@class, "titleview") and text()="Markov"]'}
 
@@ -67,6 +69,17 @@ class CODAPObject
     select_menu_item(EXAMPLE_FILENAME_LIST, sample_doc)
     driver.find_element(USER_ENTRY_EXAMPLE_OK_BUTTON).click
     #dismissed? verify_dismiss of user entry
+  end
+
+  def open_local_doc(doc_name)
+    puts "In open_local_doc"
+    wait_for { displayed?(OPEN_LOCAL_DOC_BUTTON)}
+      driver.find_element(OPEN_LOCAL_DOC_BUTTON).click
+    puts "clicked open local doc. doc name is #{doc_name}"
+    wait_for { displayed?(OPEN_LOCAL_DOC_SELECT)}
+      driver.find_element(OPEN_LOCAL_DOC_SELECT).send_keys doc_name
+    wait_for {displayed? (USER_ENTRY_OPEN_LOCAL_OK)}
+      driver.find_element(USER_ENTRY_OPEN_LOCAL_OK).click
   end
 
   def click_table_button
@@ -119,10 +132,17 @@ class CODAPObject
     driver.find_element(TOOLSHELF_BACK).click
   end
 
+  def verify_doc(opened_doc)
+    doc_title = driver.find_element(DOC_TITLE)
+    puts "Doc title is #{doc_title.text} opened_doc is #{opened_doc}"
+    expect(doc_title.text).to eql opened_doc
+  end
+
   private
   def verify_page
     expect(driver.title).to eql('Untitled Document - CODAP')
   end
+
 
   def verify_tile(button)
     case (button)
