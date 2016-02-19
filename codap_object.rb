@@ -1,7 +1,7 @@
 class CODAPObject
 
   SPLASHSCREEN = {css: '.focus'}
-  DATA_INTERACTIVE = { css: 'iframe'    }
+  DATA_INTERACTIVE = { css: 'iframe'}
   DOC_TITLE = {css: '.doc-title'}
   FILE_MENU = { css: '.nav-popup-button'}
   TOOLSHELF_BACK = { css: '.toolshelf-background'}
@@ -18,8 +18,15 @@ class CODAPObject
   OPTION_BUTTON = {css: '.dg-option-button' }
   GUIDE_BUTTON   = {css: '.dg-guide-button' }
   HELP_BUTTON = {css: '.moonicon-icon-help'}
+  H_SCROLLER = {css: '.sc-horizontal, .sc-scroller-view'}
+  SCROLL_H_RIGHT = {css: '.thumb'}
   CASE_TABLE_TILE = {css: '.dg-case-table'}
+  TABLE_HEADER_NAME = {css: '.slick-column-name'}
   GRAPH_TILE = {css: '.graph-view'}
+  GRAPH_H_AXIS = {css: '.h-axis'}
+  GRAPH_V_AXIS = {css: '.v-axis'}
+  GRAPH_PLOT_VIEW = {css: '.plot-view'}
+  GRAPH_LEGEND = {css: '.legend-view'}
   MAP_TILE = {css: '.leaflet-container'}
   SLIDER_TILE = {css: '.slider-thumb'}
   TEXT_TILE = {css: '.text-area'}
@@ -41,8 +48,8 @@ class CODAPObject
   def initialize(driver)
     @driver = driver
     visit
-    verify_page
-    dismiss_splashscreen
+    #verify_page
+    #dismiss_splashscreen
   end
 
   def visit
@@ -138,6 +145,43 @@ class CODAPObject
     expect(doc_title.text).to eql opened_doc
   end
 
+  def get_column_header(header_name)
+    header_name_path = '//span[contains(@class, "slick-column-name") and text()="'+header_name+'"]'
+    column_header_name = {xpath: header_name_path}
+    column_header_name_loc = driver.find_element(column_header_name)
+    driver.action.move_to(column_header_name_loc).perform
+    puts "Column header name is #{column_header_name_loc.text}"
+    return column_header_name_loc
+  end
+
+  def drag_attribute(header_name, graph_target)
+    #drag_scroller
+    drag_scroller_right
+    source_loc = get_column_header(header_name)
+    case (graph_target)
+      when 'x'
+        target_loc = driver.find_element(GRAPH_H_AXIS)
+      when 'y'
+        target_loc = driver.find_element(GRAPH_V_AXIS)
+      when 'legend'
+        target_loc = driver.find_element(GRAPH_PLOT_VIEW)
+    end
+    driver.action.drag_and_drop(source_loc, target_loc).perform
+  end
+
+  def drag_scroller
+    scroll = driver.find_element(H_SCROLLER)
+    driver.action.drag_and_drop_by(scroll, 100, 0).perform
+  end
+
+  def drag_scroller_right
+    puts "In drag_scroller_right"
+    scroll_right = driver.find_element(SCROLL_H_RIGHT)
+    puts "Found element #{scroll_right}"
+    driver.action.drag_and_drop_by(scroll_right, 50, 0).perform
+    #scroll_right.click
+  end
+
   private
   def verify_page
     expect(driver.title).to eql('Untitled Document - CODAP')
@@ -147,8 +191,8 @@ class CODAPObject
   def verify_tile(button)
     case (button)
       when TABLE_BUTTON
-        puts "Table button clicked"
-        #wait_for { displayed?(CASE_TABLE_TILE) }
+        #puts "Table button clicked"
+        wait_for { displayed?(CASE_TABLE_TILE) }
       when GRAPH_TILE
         wait_for { displayed?(GRAPH_TILE) }
       when MAP_BUTTON
