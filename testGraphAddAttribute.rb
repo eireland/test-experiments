@@ -8,6 +8,28 @@ def setupHelper(session_id)
   @logger = LogReporter.new(session_id)
 end
 
+def write_result_file(doc_name)
+  googledrive_path="Google Drive/CODAP @ Concord/Software Development/QA"
+  localdrive_path="Documents/CODAP data/"
+  $dir_path = "Documents/CODAP data/"
+  $save_filename = "Plot_changes_logs"
+
+  log = @driver.manage.logs.get(:browser)
+  messages = ""
+  log.each {|item| messages += item.message + "\n"}
+
+  if !File.exist?("#{Dir.home}/#{$dir_path}/#{$save_filename}") || $new_file
+    File.open("#{Dir.home}/#{$dir_path}/#{$save_filename}", "wb") do |log|
+      log<< messages unless messages == ""
+    end
+  else
+    File.open("#{Dir.home}/#{$dir_path}/#{$save_filename}", "a") do |log|
+      log << messages unless messages == ""
+    end
+  end
+
+end
+
 def setup(browser_name)
   caps = Selenium::WebDriver::Remote::Capabilities.new
   case (browser_name)
@@ -41,7 +63,7 @@ def teardown
   @driver.quit
 end
 
-MACBROWSERS = [:firefox, :chrome]
+MACBROWSERS = [:chrome]
 
 def run
   MACBROWSERS.each do |macbrowser|
@@ -54,21 +76,30 @@ end
 
 run do
   codap = CODAPObject.new(@driver)
-  open_doc = 'PH_35_Data.json'
-  file = File.absolute_path(File.join(Dir.pwd, open_doc))
-  puts "file is #{file}, open_doc is #{open_doc}"
-  codap.open_local_doc(file)
-  open_doc.slice! '.json'
-  puts "open_doc is #{open_doc}"
-  #sleep(5)
-  codap.verify_doc(open_doc)
-  codap.click_table_button
-  codap.click_graph_button
-  codap.drag_attribute('trial','x')
-  puts @driver.manage.logs.get(:browser)
-  codap.drag_attribute('randNum','y')
-  puts @driver.manage.logs.get(:browser)
-  codap.drag_attribute('choice','legend')
-  puts @driver.manage.logs.get(:browser)
+  open_doc = ['PH_35_Data.json', 'PH_5K_Data.json', 'PH_10K_Data.json']
+  open_doc.each do |doc|
+    file = File.absolute_path(File.join(Dir.pwd, doc))
+    puts "file is #{file}, doc is #{doc}"
+    codap.open_local_doc(file)
+    doc.slice! '.json'
+    puts "open_doc is #{doc}"
+    codap.verify_doc(doc)
+    codap.click_table_button
+    codap.click_graph_button
+    codap.drag_attribute('trial','x')
+    write_result_file(doc)
+    codap.drag_attribute('randNum','y')
+    write_result_file(doc)
+    codap.drag_attribute('choice','legend')
+    write_result_file(doc)
+    codap.drag_attribute('choice','x')
+    write_result_file(doc)
+    codap.drag_attribute('avgRate','y')
+    write_result_file(doc)
+#Need to close file and open next one
+    codap.open_file_menu
+    codap.select_file_menu_open_doc
+
+  end
   #puts @logger.latest
 end
