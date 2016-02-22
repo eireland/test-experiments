@@ -40,28 +40,46 @@ class CODAPObject
   TILE_ICON_SLIDER = {css: '.tile-icon-slider'}
   OPEN_LOCAL_DOC_SELECT = {xpath: '//div[contains(@class, "dg-file-import-view")]/div/input[contains(@class, "field")]'}#= {css: '.dg-file-import-view'}
   USER_ENTRY_OPEN_LOCAL_OK = {css: '.dg-ok-open-local-button'}
+  LOCAL_FILE_SELECT = {css: '.dg-file-import-view, .not-empty'}
+  FILE_MENU_OPEN_DOC = {id: 'dg-fileMenutItem-open-doc'}
+  ALERT_DIALOG = {xpath: '//div[contains(@role, "alertdialog")]'}
+  NOT_SAVED_CLOSE_BUTTON = {xpath: '//div[contains(@class, "sc-alert)]/div/div/div[contains(@label,"Close")]'}
 
-  MARKOV_DOC_TITLE = {xpath: '//div[contains(@class, "titleview") and text()="Markov"]'}
 
   attr_reader :driver
 
   def initialize(driver)
     @driver = driver
     visit
-    #verify_page
-    #dismiss_splashscreen
+    verify_page
+    dismiss_splashscreen
   end
 
   def visit
     driver.get ENV['base_url']
   end
 
+  def open_file_menu
+    driver.find_element(FILE_MENU).click
+  end
+
+  def select_file_menu_open_doc
+    wait_for {displayed?(FILE_MENU_OPEN_DOC)}
+    driver.find_element(FILE_MENU_OPEN_DOC).click
+  end
+
+  def not_saved_alert_close_button
+    wait_for {displayed?(ALERT_DIALOG)}
+    wait_for {displayed?(NOT_SAVED_CLOSE_BUTTON)}
+    driver.find_element(NOT_SAVED_CLOSE_BUTTON).click
+  end
+
   def start_new_doc
     puts "In start_new_doc"
     wait_for { displayed?(OPEN_NEW_BUTTON) }
-      driver.find_element(OPEN_NEW_BUTTON).click
+    driver.find_element(OPEN_NEW_BUTTON).click
     wait_for { displayed?(USER_ENTRY_OK_BUTTON) }
-      driver.find_element(USER_ENTRY_OK_BUTTON).click
+    driver.find_element(USER_ENTRY_OK_BUTTON).click
     #dismissed? verify_dismiss of user entry
   end
 
@@ -81,68 +99,80 @@ class CODAPObject
   def open_local_doc(doc_name)
     puts "In open_local_doc"
     wait_for { displayed?(OPEN_LOCAL_DOC_BUTTON)}
-      driver.find_element(OPEN_LOCAL_DOC_BUTTON).click
+    driver.find_element(OPEN_LOCAL_DOC_BUTTON).click
     puts "clicked open local doc. doc name is #{doc_name}"
     wait_for { displayed?(OPEN_LOCAL_DOC_SELECT)}
-      driver.find_element(OPEN_LOCAL_DOC_SELECT).send_keys doc_name
+    driver.find_element(OPEN_LOCAL_DOC_SELECT).send_keys doc_name
+    wait_for {displayed? (LOCAL_FILE_SELECT)}
     wait_for {displayed? (USER_ENTRY_OPEN_LOCAL_OK)}
-      driver.find_element(USER_ENTRY_OPEN_LOCAL_OK).click
+    driver.find_element(USER_ENTRY_OPEN_LOCAL_OK).click
+  end
+
+  def verify_doc(opened_doc)
+    puts "open_doc is #{opened_doc}"
+    doc_title = driver.find_element(DOC_TITLE)
+    puts "Doc title is #{doc_title.text} opened_doc is #{opened_doc}"
+    wait_for {doc_title.text == opened_doc}
+    #expect(doc_title.text).to eql opened_doc
   end
 
   def click_table_button
+    wait_for {displayed? (TABLE_BUTTON)}
     driver.find_element(TABLE_BUTTON).click
     verify_tile(TABLE_BUTTON)
   end
 
   def click_graph_button
+    wait_for {displayed? (GRAPH_BUTTON)}
     driver.find_element(GRAPH_BUTTON).click
     verify_tile(GRAPH_BUTTON)
   end
 
   def click_map_button
+    wait_for {displayed? (MAP_BUTTON)}
     driver.find_element(MAP_BUTTON).click
     verify_tile(MAP_BUTTON)
   end
 
   def click_slider_button
+    wait_for {displayed? (SLIDER_BUTTON)}
     driver.find_element(SLIDER_BUTTON).click
     verify_tile(SLIDER_BUTTON)
   end
 
   def click_calc_button
+    wait_for {displayed? (CALC_BUTTON)}
     driver.find_element(CALC_BUTTON).click
     verify_tile(CALC_BUTTON)
   end
 
   def click_text_button
+    wait_for {displayed? (TEXT_BUTTON)}
     driver.find_element(TEXT_BUTTON).click
     verify_tile(TEXT_BUTTON)
   end
 
   def click_tilelist_button
+    wait_for {displayed? (TILE_LIST_BUTTON)}
     driver.find_element(TILE_LIST_BUTTON).click
     verify_tile(TILE_LIST_BUTTON)
   end
 
   def click_option_button
+    wait_for {displayed? (OPTION_BUTTON)}
     driver.find_element(OPTION_BUTTON).click
     verify_tile(OPTION_BUTTON)
     driver.find_element(MENU_SEPARTOR).click
   end
 
   def click_guide_button
+    wait_for {displayed? (GUIDE_BUTTON)}
     driver.find_element(GUIDE_BUTTON).click
     verify_tile(GUIDE_BUTTON)
   end
 
   def click_toolshelf
     driver.find_element(TOOLSHELF_BACK).click
-  end
-
-  def verify_doc(opened_doc)
-    doc_title = driver.find_element(DOC_TITLE)
-    puts "Doc title is #{doc_title.text} opened_doc is #{opened_doc}"
-    expect(doc_title.text).to eql opened_doc
   end
 
   def get_column_header(header_name)
@@ -156,7 +186,7 @@ class CODAPObject
 
   def drag_attribute(header_name, graph_target)
     #drag_scroller
-    drag_scroller_right
+    #drag_scroller_right
     source_loc = get_column_header(header_name)
     case (graph_target)
       when 'x'
@@ -165,6 +195,7 @@ class CODAPObject
         target_loc = driver.find_element(GRAPH_V_AXIS)
       when 'legend'
         target_loc = driver.find_element(GRAPH_PLOT_VIEW)
+        wait_for { displayed?(GRAPH_LEGEND)}
     end
     driver.action.drag_and_drop(source_loc, target_loc).perform
   end
@@ -206,7 +237,7 @@ class CODAPObject
         driver.find_element(TEXT_TILE).click
       when TILE_LIST_BUTTON
         puts "Tile list button clicked"
-        #driver.find_element(:xpath=> '//span[contains(@class, "ellipsis") and text()="No Data"]').click
+      #driver.find_element(:xpath=> '//span[contains(@class, "ellipsis") and text()="No Data"]').click
       when OPTION_BUTTON
         puts "Option button clicked"
       when GUIDE_BUTTON
@@ -215,7 +246,9 @@ class CODAPObject
   end
 
   def dismiss_splashscreen
-    if driver.find_element(SPLASHSCREEN) #Dismisses the splashscreen if present
+    if !driver.find_element(SPLASHSCREEN) #Dismisses the splashscreen if present
+      #sleep(5)
+    else
       driver.find_element(SPLASHSCREEN).click
     end
   end
