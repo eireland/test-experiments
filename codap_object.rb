@@ -5,7 +5,7 @@ class CODAPObject
   DOC_TITLE = {css: '.doc-title'}
   FILE_MENU = { css: '.nav-popup-button'}
   TOOLSHELF_BACK = { css: '.toolshelf-background'}
-  MENU_SEPARTOR = { css: '.sc-menu-item.disabled'}
+  VIEW_WEBPAGE_MENU_ITEM = { id: 'dg-optionMenuItem-view_webpage'}
   TABLE_BUTTON = { css: '.dg-table-button' }
   GRAPH_BUTTON = { css: '.dg-graph-button'  }
   MAP_BUTTON = {css: '.dg-map-button'}
@@ -17,7 +17,7 @@ class CODAPObject
   TILE_LIST_BUTTON ={css: '.dg-tilelist-button' }
   OPTION_BUTTON = {css: '.dg-option-button' }
   GUIDE_BUTTON   = {css: '.dg-guide-button' }
-  HELP_BUTTON = {css: '.moonicon-icon-help'}
+  HELP_BUTTON = {css: '.navBar-help'}
   H_SCROLLER = {css: '.sc-horizontal, .sc-scroller-view'}
   SCROLL_H_RIGHT = {css: '.thumb'}
   CASE_TABLE_TILE = {css: '.dg-case-table'}
@@ -25,6 +25,7 @@ class CODAPObject
   GRAPH_TILE = {css: '.graph-view'}
   GRAPH_H_AXIS = {css: '.h-axis'}
   GRAPH_V_AXIS = {css: '.v-axis'}
+  GRAPH_V2_AXIS = {css: '.v2-axis'}
   GRAPH_PLOT_VIEW = {css: '.plot-view'}
   GRAPH_LEGEND = {css: '.legend-view'}
   MAP_TILE = {css: '.leaflet-container'}
@@ -46,10 +47,9 @@ class CODAPObject
   NOT_SAVED_CLOSE_BUTTON = {xpath: '//div[contains(@class, "sc-alert)]/div/div/div[contains(@label,"Close")]'}
   AXIS_MENU_REMOVE = {xpath: '//div[contains(@class, "sc-menu-item")]/a/span[contains(text(),"Remove")]'}
   GRAPH_SCREENSHOT = {css: '.display-camera'}
-  #GRAPH_SCREENSHOT_FILENAME = {xpath: '//div[contains(@role,"dialog")]'}#/div[2]/div[2]/input[contains(@class, "field")]'}
-  GRAPH_SCREENSHOT_FILENAME = {css: '.dg-single-text-dialog-textfield, .focus'}
-  GRAPH_SCREENSHOT_CANCEL = {css: '.dg-single-text-dialog-cancel'}
-  GRAPH_SCREENSHOT_OK = {css: '.dg-single-text-dialog-ok'}
+  SINGLE_TEXT_DIALOG_TEXTFIELD = {css: '.dg-single-text-dialog-textfield'}
+  SINGLE_TEXT_DIALOG_OK_BUTTON = {css: '.dg-single-text-dialog-ok'} #Graph Screenshot, Display Webpage
+  SINGLE_TEXT_DIALOG_CANCEL_BUTTON = {css: '.dg-single-text-dialog-cancel'}
 
 
   attr_reader :driver
@@ -122,59 +122,34 @@ class CODAPObject
     #expect(doc_title.text).to eql opened_doc
   end
 
-  def click_table_button
-    wait_for {displayed? (TABLE_BUTTON)}
-    driver.find_element(TABLE_BUTTON).click
-    verify_tile(TABLE_BUTTON)
-  end
+  def click_button(button)
+    case (button)
+      when 'table'
+        element = TABLE_BUTTON
+      when 'graph'
+        element = GRAPH_BUTTON
+      when 'map'
+        element = MAP_BUTTON
+      when 'slider'
+        element = SLIDER_BUTTON
+      when 'calc'
+        element = CALC_BUTTON
+      when 'text'
+        element = TEXT_BUTTON
+      when 'tile'
+        element = TILE_LIST_BUTTON
+      when 'option'
+        element = OPTION_BUTTON
+      when 'guide'
+        element = GUIDE_BUTTON
+      when 'tooslhelf'
+        element = TOOLSHELF_BACK
+    end
 
-  def click_graph_button
-    wait_for {displayed? (GRAPH_BUTTON)}
-    driver.find_element(GRAPH_BUTTON).click
-    verify_tile(GRAPH_BUTTON)
-  end
-
-  def click_map_button
-    wait_for {displayed? (MAP_BUTTON)}
-    driver.find_element(MAP_BUTTON).click
-    verify_tile(MAP_BUTTON)
-  end
-
-  def click_slider_button
-    wait_for {displayed? (SLIDER_BUTTON)}
-    driver.find_element(SLIDER_BUTTON).click
-    verify_tile(SLIDER_BUTTON)
-  end
-
-  def click_calc_button
-    wait_for {displayed? (CALC_BUTTON)}
-    driver.find_element(CALC_BUTTON).click
-    verify_tile(CALC_BUTTON)
-  end
-
-  def click_text_button
-    wait_for {displayed? (TEXT_BUTTON)}
-    driver.find_element(TEXT_BUTTON).click
-    verify_tile(TEXT_BUTTON)
-  end
-
-  def click_tilelist_button
-    wait_for {displayed? (TILE_LIST_BUTTON)}
-    driver.find_element(TILE_LIST_BUTTON).click
-    verify_tile(TILE_LIST_BUTTON)
-  end
-
-  def click_option_button
-    wait_for {displayed? (OPTION_BUTTON)}
-    driver.find_element(OPTION_BUTTON).click
-    verify_tile(OPTION_BUTTON)
-    driver.find_element(MENU_SEPARTOR).click
-  end
-
-  def click_guide_button
-    wait_for {displayed? (GUIDE_BUTTON)}
-    driver.find_element(GUIDE_BUTTON).click
-    verify_tile(GUIDE_BUTTON)
+    puts "button is #{button}, element is #{element}"
+    wait_for {displayed?(element)}
+    driver.find_element(element).click
+    verify_tile(element)
   end
 
   def click_toolshelf
@@ -243,12 +218,13 @@ class CODAPObject
     driver.find_element(GRAPH_TILE).click
     sleep(3)
     driver.find_element(GRAPH_SCREENSHOT).click
-    screenshot_popup = wait_for{driver.find_element(GRAPH_SCREENSHOT_FILENAME)}
+    screenshot_popup = wait_for{driver.find_element(SINGLE_TEXT_DIALOG_TEXTFIELD)}
     puts "Found screenshot_popup at #{screenshot_popup}"
     driver.action.click(screenshot_popup).perform
-     screenshot_filename = "#{attribute}_on_#{location}"
+    screenshot_filename = "#{attribute}_on_#{location}"
     driver.action.send_keys(screenshot_popup, screenshot_filename).perform
-    driver.find_element(GRAPH_SCREENSHOT_OK).click
+    driver.find_element(SINGLE_TEXT_DIALOG_OK_BUTTON).click
+
   end
 
   private
@@ -277,11 +253,21 @@ class CODAPObject
       when TEXT_BUTTON
         wait_for { displayed?(TEXT_TILE) }
         driver.find_element(TEXT_TILE).click
+      when HELP_BUTTON
+        # help_page_title = driver.find_element(:id, "block-menu-menu-help-categories")
+        # wait_for {displayed?(help_page_title)}
+        # expect(help_page_title.text).to include "CODAP Help"
+        puts "Help button clicked."
       when TILE_LIST_BUTTON
         puts "Tile list button clicked"
       #driver.find_element(:xpath=> '//span[contains(@class, "ellipsis") and text()="No Data"]').click
       when OPTION_BUTTON
-        puts "Option button clicked"
+        wait_for {displayed? (VIEW_WEBPAGE_MENU_ITEM)}
+        driver.find_element(VIEW_WEBPAGE_MENU_ITEM).click
+        textfield = wait_for{driver.find_element(SINGLE_TEXT_DIALOG_TEXTFIELD)}
+        driver.action.click(textfield).perform
+        driver.find_element(SINGLE_TEXT_DIALOG_CANCEL_BUTTON).click
+      # puts "Option button clicked"
       when GUIDE_BUTTON
         puts "Guide button clicked"
     end
