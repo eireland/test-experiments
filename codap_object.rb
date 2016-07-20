@@ -1,8 +1,11 @@
 require './codap_base_object'
+require './cfm_object'
 
-class CODAPObject
+class CODAPObject < CodapBaseObject
+  include CFMObject
+
   SPLASHSCREEN = {css: '.focus'}
-  BACKGROUND = {css: '.doc-background'}
+  BACKGROUND = {css: 'menu-bar'}
   DATA_INTERACTIVE = { css: 'iframe'}
   DOC_TITLE = {css: '.menu-bar-content-filename'}
   DOC_FILE_STATUS = {css: 'span.menu-bar-file-status-alert'}
@@ -27,47 +30,36 @@ class CODAPObject
   CASE_TABLE_TILE = {css: '.dg-case-table'}
   GRAPH_TILE = {css: '.graph-view'}
   MAP_TILE = {css: '.leaflet-container'}
-  SLIDER_TILE = {css: '.slider-thumb'}
+  SLIDER_TILE = {css: '.slider-label'}
   TEXT_TILE = {css: '.text-area'}
   CALC_TILE = {css: '.calculator'}
-  OPEN_NEW_BUTTON = {id: 'dg-user-entry-new-doc-button'}
+#  OPEN_NEW_BUTTON = {id: 'dg-user-entry-new-doc-button'}
   OPEN_DOC_BUTTON = {id: 'dg-user-entry-open-doc-button'}
   AUTHORIZE_STARTUP_BUTTON = {id: 'dg-user-entry-authorize-startup-button'}
 #HELP_TILE = {css: } Help is a webview in an iframe component has //*[div[contains(@class="titleview")and contains(text(), 'Help with CODAP')]
   TILE_ICON_SLIDER = {css: '.tile-icon-slider'}
   ALERT_DIALOG = {xpath: '//div[contains(@role, "alertdialog")]'}
-  NOT_SAVED_CLOSE_BUTTON = {xpath: '//div[contains(@class, "sc-alert)]/div/div/div[contains(@label,"Close")]'}
+  NOT_SAVED_CLOSE_BUTTON = {xpath: '//div[contains(@class, "sc-alert")]/div/div/div[contains(@label,"Close")]'}
   VIEW_WEBPAGE_MENU_ITEM = { id: 'dg-optionMenuItem-view_webpage'}
   OPTION_MENU_SEPARATOR ={css: '.menu-item.disabled'}
+  OPEN_CODAP_WEBSITE = {id: 'dg-optionMenuItem-codap-website'}
+  WEBVIEW_FRAME = {css: '.dg-web-view-frame'}
+  TILE_MENU_ITEM = {css: 'a.menu-item'}
 
-#Open Dialog box locators
-  OPEN_EXAMPLE_DOCS = {css: '.workspace-tabs >ul:nth-of-type(1)> li'}#.workspace-tabs>ul>li:contains("Example Documents")
-  OPEN_CONCORD_CLOUD = {css: '.workspace-tabs >ul:nth-of-type(2) > li'}
-  OPEN_GOOGLE_DRIVE = {css: '.workspace-tabs >ul:nth-of-type(3) > li'}
-  OPEN_LOCAL_FILE = {css: '.workspace-tabs >ul:nth-of-type(4) > li'}
-
-
-  attr_reader :driver
-
-  def initialize(driver)
+  def initialize()
     puts "Initializing"
-    @driver=driver
-    @codap_base = CodapBaseObject.new(driver)
-    @codap_base.visit
-    @codap_base.verify_page('CODAP')
-    dismiss_splashscreen
   end
 
   def user_entry_open_doc
     puts "In user_entry_open_doc"
-    @codap_base.wait_for{ displayed?(OPEN_DOC_BUTTON) }
-    @codap_base.click_on(OPEN_DOC_BUTTON)
+    wait_for{ displayed?(OPEN_DOC_BUTTON) }
+    click_on(OPEN_DOC_BUTTON)
   end
 
   def user_entry_start_new_doc
     puts "In user_entry_start_new_doc"
-    @codap_base.wait_for { displayed?(OPEN_NEW_BUTTON) }
-    @codap_base.click_on(OPEN_NEW_BUTTON)
+    wait_for { displayed?(USER_ENTRY_NEW_DOC_BUTTON) }
+    click_on(USER_ENTRY_NEW_DOC_BUTTON)
   end
 
   def open_file_menu
@@ -119,16 +111,43 @@ class CODAPObject
     end
 
     puts "button is #{button}, element is #{element}"
-    @codap_base.click_on(element)
+    click_on(element)
     if verifiable.include? button
       puts "#{button} Button is in verifiable"
       verify_tile(element)
     end
+    if button == 'option'
+      puts "In option if. #{OPEN_CODAP_WEBSITE}"
+      click_on(OPEN_CODAP_WEBSITE)
+      verify_tile(WEBVIEW_FRAME)
+      sleep(5)
+    end
+    if button == "tilelist"
+      puts "In tilelist if #{TILE_MENU_ITEM}"
+      click_on(TILE_MENU_ITEM)
+    end
+  end
+
+  def undo
+    click_on(UNDO_BUTTON)
+  end
+
+  def redo
+    click_on(REDO_BUTTON)
+  end
+
+  def open_local_doc(doc_name)
+    puts "File name is: #{doc_name}"
+    wait_for {displayed? (OPEN_LOCAL_FILE)}
+    click_button('local')
+    wait_for {displayed? (FILE_SELECTION_DROP_AREA)}
+    find(FILE_SELECTION_DROP_AREA).send_keys doc_name
+
   end
 
   def click_toolshelf
     #@codap_base.click_on(TOOLSHELF_BACK)
-    driver.find_element(TOOLSHELF_BACK).click
+    @@driver.find_element(TOOLSHELF_BACK).click
   end
 
   def drag_scroller
@@ -144,14 +163,13 @@ class CODAPObject
     #scroll_right.click
   end
 
-  def verify_page
-    expect(driver.title).to include('CODAP')
-  end
+  # def verify_page
+  #   expect(driver.title).to include('CODAP')
+  # end
 
   def verify_tile(button)
     case (button)
       when TABLE_BUTTON
-        #puts "Table button clicked"
         wait_for { displayed?(CASE_TABLE_TILE) }
       when GRAPH_TILE
         wait_for { displayed?(GRAPH_TILE) }
@@ -163,7 +181,7 @@ class CODAPObject
         wait_for { displayed?(CALC_TILE) }
       when TEXT_BUTTON
         wait_for { displayed?(TEXT_TILE) }
-        @codap_base.click_on(TEXT_TILE)
+        click_on(TEXT_TILE)
       when HELP_BUTTON
         # help_page_title = driver.find_element(:id, "block-menu-menu-help-categories")
         # wait_for {displayed?(help_page_title)}
@@ -184,29 +202,18 @@ class CODAPObject
     end
   end
 
+  def verify_doc_title(doc_name)
+    expect(driver.title).to include(doc_name)
+  end
+
   def dismiss_splashscreen
-    if !@codap_base.find(SPLASHSCREEN) #Dismisses the splashscreen if present
+    if !find(SPLASHSCREEN) #Dismisses the splashscreen if present
       sleep(5)
     else
-      @codap_base.click_on(SPLASHSCREEN)
+      click_on(SPLASHSCREEN)
     end
   end
 
-  private
-
-def wait_for(seconds=25)
-  puts "Waiting"
-  Selenium::WebDriver::Wait.new(:timeout => seconds).until { yield }
-end
-
-  def displayed?(locator)
-    @driver.find_element(locator).displayed?
-    puts "#{locator} found"
-    true
-  rescue Selenium::WebDriver::Error::NoSuchElementError
-    puts "#{locator} not found"
-    false
-  end
 end
 
 
