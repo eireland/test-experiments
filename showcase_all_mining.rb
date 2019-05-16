@@ -104,7 +104,7 @@ def run
 end
 
 run do
-  @url_base = "http://stemforall2018.videohall.com/presentations/"
+  @url_base = "http://stemforall2019.videohall.com/presentations/"
   num_videos = 0
 
     url = "#{@url_base}"

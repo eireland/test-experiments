@@ -1,4 +1,4 @@
-
+# run showcase_all_mining.rb first to get all the presentation ids
 require 'rubygems'
 require 'selenium-webdriver'
 require 'csv'
@@ -150,7 +150,7 @@ def run
 end
 
 run do
-  url_base = "http://stemforall2018.videohall.com/presentations/"
+  url_base = "http://stemforall2019.videohall.com/presentations/"
   num_videos=0
   presentation_ids = get_presentation_ids(url_base)
 
@@ -160,5 +160,5 @@ run do
     get_info(id,url)
     num_videos +=1
   end
-  puts "num of videos #{num_videos}. Expecting 214"
+  puts "num of videos #{num_videos}. Expecting 242"
 end
