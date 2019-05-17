@@ -1,3 +1,4 @@
+# have to clean up Singapore rows manually because it is missing a city
 require 'rubygems'
 require 'selenium-webdriver'
 require 'csv'
