@@ -24,7 +24,7 @@ def get_page(url)
 end
 
 def write_to_file(video_info)
-  $dir_path = "Documents/CODAP data/"
+  $dir_path = "Downloads"
   $save_filename = "Showcase Metadata.csv"
 
   if !File.exist?("#{Dir.home}/#{$dir_path}/#{$save_filename}") || $new_file
@@ -104,7 +104,7 @@ def run
 end
 
 run do
-  @url_base = "http://stemforall2019.videohall.com/presentations/"
+  @url_base = "https://stemforall2020.videohall.com/presentations/"
   num_videos = 0
 
     url = "#{@url_base}"

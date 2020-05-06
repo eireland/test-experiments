@@ -23,7 +23,7 @@ def get_page(url)
 end
 
 def write_to_file(num, city, state, country, num_visits, num_users, lat, long)
-  $dir_path = "Documents/CODAP data/"
+  $dir_path = "Downloads"
   $save_filename = "Showcase Views Locations.csv"
 
   if !File.exist?("#{Dir.home}/#{$dir_path}/#{$save_filename}") || $new_file
@@ -128,12 +128,12 @@ end
 
 run do
   # https://stemforall2019.videohall.com/
-  url_base = "https://stemforall2019.videohall.com/maps"
+  url_base = "https://stemforall2020.videohall.com/maps"
   location_array = []
   hash_map_arr=[]
   num_videos=0
   # presentation_ids = get_presentation_ids(url_base)
-  presentation_ids = ['1394','1552','1579'] #only the concord projects for now
+  presentation_ids = ['1852','1727','1794'] #only the concord projects for now
   presentation_ids.each do |id|
     url = "view-source:#{url_base}/#{id}"
     get_page(url)
