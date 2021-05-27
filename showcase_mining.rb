@@ -23,7 +23,7 @@ end
 
 def write_to_file(num, presenter, presenter_org, presentations, grant_1, grant_2, grant_3, views, discussions, keyword_1, keyword_2, keyword_3, url)
   $dir_path = "Downloads"
-  $save_filename = "Showcase Views.csv"
+  $save_filename = "2021_Showcase_Views.csv"
   puts "in write_to_file"
   if !File.exist?("#{Dir.home}/#{$dir_path}/#{$save_filename}") || $new_file
     CSV.open("#{Dir.home}/#{$dir_path}/#{$save_filename}", "wb") do |csv|
@@ -150,7 +150,7 @@ def run
 end
 
 run do
-  url_base = "https://stemforall2020.videohall.com/presentations/"
+  url_base = "https://stemforall2021.videohall.com/presentations/"
   num_videos=0
   presentation_ids = get_presentation_ids(url_base)
 
